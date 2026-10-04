@@ -12,6 +12,8 @@ import {
 } from '@grafana/data';
 import { AxisPlacement, ScaleDistribution } from '@grafana/schema';
 
+import { formatElapsedValue } from '../../../internal';
+import { getElapsedZeroMs as getElapsedZeroMsFromValue } from '../../../utils/elapsedTime';
 import { measureText } from '../../../utils/measureText';
 import { PlotConfigBuilder } from '../types';
 
@@ -204,7 +206,7 @@ export const timeUnitSize = {
   year: 365 * 24 * 60 * 60 * 1000,
 };
 
-function pad2(v: number): string {
+export function pad2(v: number): string {
   return String(v).padStart(2, '0');
 }
 
@@ -212,12 +214,6 @@ function getFirstFiniteXValue(self: uPlot): number | undefined {
   const xValues = self.data?.[0] as Array<number | null | undefined> | undefined;
 
   return xValues?.find((v): v is number => typeof v === 'number' && Number.isFinite(v));
-}
-
-function getLocalDayStartMs(value: number): number {
-  const date = new Date(value);
-  date.setHours(0, 0, 0, 0);
-  return date.getTime();
 }
 
 function getElapsedZeroMs(self: uPlot, explicitZeroMs?: number): number {
@@ -228,41 +224,16 @@ function getElapsedZeroMs(self: uPlot, explicitZeroMs?: number): number {
   const firstX = getFirstFiniteXValue(self);
 
   if (firstX != null) {
-    return firstX > timeUnitSize.year ? getLocalDayStartMs(firstX) : 0;
+    return getElapsedZeroMsFromValue(firstX);
   }
 
   const min = self.scales.x?.min;
 
   if (typeof min === 'number' && Number.isFinite(min)) {
-    return min > timeUnitSize.year ? getLocalDayStartMs(min) : 0;
+    return getElapsedZeroMsFromValue(min);
   }
 
   return 0;
-}
-
-function formatElapsedValue(elapsedMs: number, foundIncr: number): string {
-  const clamped = Math.max(0, elapsedMs);
-
-  const totalHours = Math.floor(clamped / timeUnitSize.hour);
-  const minutes = Math.floor((clamped % timeUnitSize.hour) / timeUnitSize.minute);
-  const seconds = Math.floor((clamped % timeUnitSize.minute) / timeUnitSize.second);
-
-  // 4 fractional digits of seconds. If values are millisecond-based, the 4th digit will naturally be 0.
-  const fractionalSeconds = Math.floor(((clamped % timeUnitSize.second) / timeUnitSize.second) * 10000);
-
-  const hh = String(totalHours).padStart(2, '0');
-  const mm = pad2(minutes);
-  const ss = pad2(seconds);
-
-  if (foundIncr < timeUnitSize.second) {
-    return `${hh}:${mm}:${ss}.${String(fractionalSeconds).padStart(4, '0')}`;
-  }
-
-  if (foundIncr < timeUnitSize.minute) {
-    return `${hh}:${mm}:${ss}`;
-  }
-
-  return `${hh}:${mm}`;
 }
 
 /** Format elapsed-time axis ticks without 24-hour wrapping */

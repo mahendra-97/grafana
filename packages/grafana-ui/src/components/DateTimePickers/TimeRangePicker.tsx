@@ -14,11 +14,13 @@ import {
   type TimeRange,
   type TimeZone,
   getTimeZoneInfo,
+  isElapsedTimeModeEnabled,
 } from '@grafana/data';
 import { selectors } from '@grafana/e2e-selectors';
 import { t, Trans } from '@grafana/i18n';
 
 import { useStyles2 } from '../../themes/ThemeContext';
+import { getLocalDayStartMs } from '../../utils/elapsedTime';
 import { getFeatureToggle } from '../../utils/featureToggle';
 import { ButtonGroup } from '../Button/ButtonGroup';
 import { getModalStyles } from '../Modal/getModalStyles';
@@ -32,6 +34,10 @@ import { TimeZoneDescription } from './TimeZonePicker/TimeZoneDescription';
 import { type WeekStart } from './WeekStartPicker';
 import { getQuickOptions } from './options';
 import { useTimeSync } from './utils/useTimeSync';
+import { formatElapsedTimeRangeValue } from '../../utils/elapsedTime';
+
+
+
 
 /** @public */
 export interface TimeRangePickerProps {
@@ -71,131 +77,31 @@ export interface TimeRangePickerProps {
   weekStart?: WeekStart;
 }
 
-function isElapsedTimeModeEnabled(): boolean {
-  if (typeof window === 'undefined') {
-    return false;
+const ELAPSED_TIME_ZERO_MS = 0;
+const CALENDAR_DATE_THRESHOLD_MS = Date.UTC(2000, 0, 1);
+
+export function getElapsedPickerZeroMs(value?: TimeRange): number {
+  const fromMs = value?.from.valueOf();
+  // if (Number.isFinite(fromMs) && fromMs > CALENDAR_DATE_THRESHOLD_MS) {
+  if (typeof fromMs === 'number' && Number.isFinite(fromMs) && fromMs > CALENDAR_DATE_THRESHOLD_MS) {
+    return getLocalDayStartMs(fromMs);
   }
-
-  const params = new URLSearchParams(window.location.search);
-
-  return params.get('elapsedTimeMode') === 'true' || params.get('var-elapsedTimeMode') === 'true';
-}
-
-function getElapsedZeroMsFromUrl(): number | undefined {
-  if (typeof window === 'undefined') {
-    return undefined;
-  }
-
-  const params = new URLSearchParams(window.location.search);
-  const rawZeroMs = params.get('elapsedZeroMs') ?? params.get('var-elapsedZeroMs');
-
-  if (!rawZeroMs) {
-    return undefined;
-  }
-
-  const zeroMs = Number(rawZeroMs);
-  return Number.isFinite(zeroMs) ? zeroMs : undefined;
-}
-
-function getLocalDayStartMs(value: number): number {
-  const date = new Date(value);
-  date.setHours(0, 0, 0, 0);
-  return date.getTime();
-}
-
-function getElapsedTimePickerZeroMs(value: TimeRange): number {
-  return getElapsedZeroMsFromUrl() ?? getLocalDayStartMs(value.from.valueOf());
-}
-
-function pad2(v: number): string {
-  return String(v).padStart(2, '0');
-}
-
-function pad4(v: number): string {
-  return String(v).padStart(4, '0');
-}
-
-// function formatElapsedTimeRangeValue(value: number, zeroMs: number): string {
-//   const elapsedMs = Math.max(0, value - zeroMs);
-
-//   const totalHours = Math.floor(elapsedMs / (60 * 60 * 1000));
-//   const minutes = Math.floor((elapsedMs % (60 * 60 * 1000)) / (60 * 1000));
-//   const seconds = Math.floor((elapsedMs % (60 * 1000)) / 1000);
-//   const fractionalSeconds = Math.floor(((elapsedMs % 1000) / 1000) * 10000);
-
-//   return `${String(totalHours).padStart(2, '0')}:${pad2(minutes)}:${pad2(seconds)}.${pad4(fractionalSeconds)}`;
-// }
-
-function formatElapsedTimeRangeValue(value: number, zeroMs: number): string {
-  if (!Number.isFinite(value) || !Number.isFinite(zeroMs)) {
-    return 'Invalid date';
-  }
-
-  const elapsedMs = Math.max(0, value - zeroMs);
-
-  const totalHours = Math.floor(elapsedMs / (60 * 60 * 1000));
-  const minutes = Math.floor((elapsedMs % (60 * 60 * 1000)) / (60 * 1000));
-  const seconds = Math.floor((elapsedMs % (60 * 1000)) / 1000);
-  const fractionalSeconds = Math.floor(((elapsedMs % 1000) / 1000) * 10000);
-
-  return `${String(totalHours).padStart(2, '0')}:${pad2(minutes)}:${pad2(seconds)}.${pad4(fractionalSeconds)}`;
-}
-
-function getNumberParamFromUrl(name: string): number | undefined {
-  if (typeof window === 'undefined') {
-    return undefined;
-  }
-
-  const rawValue = new URLSearchParams(window.location.search).get(name);
-
-  if (!rawValue) {
-    return undefined;
-  }
-
-  const value = Number(rawValue);
-
-  return Number.isFinite(value) ? value : undefined;
+  return ELAPSED_TIME_ZERO_MS;
 }
 
 function formatElapsedTimeRange(value: TimeRange): string {
-  const zeroMs = getElapsedTimePickerZeroMs(value);
+  const zeroMs = getElapsedPickerZeroMs(value);
 
-  let fromMs = value.from.valueOf();
-  let toMs = value.to.valueOf();
-
-  if (!Number.isFinite(fromMs)) {
-    fromMs = getNumberParamFromUrl('from') ?? NaN;
-  }
-
-  if (!Number.isFinite(toMs)) {
-    toMs = getNumberParamFromUrl('to') ?? NaN;
-  }
-
-  if (!Number.isFinite(fromMs) || !Number.isFinite(toMs)) {
-    return 'Invalid date';
-  }
-
-  return `${formatElapsedTimeRangeValue(fromMs, zeroMs)} to ${formatElapsedTimeRangeValue(toMs, zeroMs)}`;
+  return `${formatElapsedTimeRangeValue(value.from.valueOf(), zeroMs)} to ${formatElapsedTimeRangeValue(value.to.valueOf(), zeroMs)}`;
 }
 
-// function formatElapsedTimeRange(value: TimeRange): string {
-//   const fromMs = value.from.valueOf();
-//   const toMs = value.to.valueOf();
-//   const zeroMs = getElapsedTimePickerZeroMs(value);
-
-//   return `${formatElapsedTimeRangeValue(fromMs, zeroMs)} to ${formatElapsedTimeRangeValue(toMs, zeroMs)}`;
-// }
-
-function clampElapsedTimeRangeToZero(value: TimeRange): TimeRange {
+function clampElapsedTimerangeToZero(value: TimeRange): TimeRange {
   if (!isElapsedTimeModeEnabled()) {
     return value;
   }
 
-  const zeroMs = getElapsedZeroMsFromUrl();
-
-  if (zeroMs == null) {
-    return value;
-  }
+  const zeroMs = getElapsedPickerZeroMs(value);
+  // const zeroMs = ELAPSED_TIME_ZERO_MS;
 
   const fromMs = value.from.valueOf();
   const toMs = value.to.valueOf();
@@ -276,44 +182,26 @@ export function TimeRangePicker(props: TimeRangePickerProps) {
   });
 
   const onChange = (timeRange: TimeRange) => {
-    onChangeWithSync(clampElapsedTimeRangeToZero(timeRange));
+    onChangeWithSync(clampElapsedTimerangeToZero(timeRange));
     setOpen(false);
   };
-
-  // useEffect(() => {
-  //   if (!isElapsedTimeModeEnabled()) {
-  //     return;
-  //   }
-
-  //   const zeroMs = getElapsedZeroMsFromUrl();
-
-  //   if (zeroMs == null) {
-  //     return;
-  //   }
-
-  //   const fromMs = value.from.valueOf();
-  //   const toMs = value.to.valueOf();
-
-  //   if (!Number.isFinite(fromMs) || !Number.isFinite(toMs)) {
-  //     return;
-  //   }
-
-  //   if (fromMs >= zeroMs) {
-  //     return;
-  //   }
-
-  //   const clampedValue = clampElapsedTimeRangeToZero(value);
-
-  //   if (clampedValue.from.valueOf() !== fromMs || clampedValue.to.valueOf() !== toMs) {
-  //     onChangeWithSync(clampedValue);
-  //   }
-  // }, [value, onChangeWithSync]);
 
   useEffect(() => {
     if (isOpen && onToolbarTimePickerClick) {
       onToolbarTimePickerClick();
     }
   }, [isOpen, onToolbarTimePickerClick]);
+
+  // useEffect(() => {
+  //   const handler = () => useForceUpdate();
+
+  //   window.addEventListener('elapsed-time-mode-change', handler);
+
+  //   return () => {
+  //     window.removeEventListener('elapsed-time-mode-change', handler);
+  //   };
+  //  }, []
+  // );
 
   const onToolbarButtonSwitch = () => {
     setOpen((prevState) => !prevState);
@@ -355,13 +243,8 @@ export function TimeRangePicker(props: TimeRangePickerProps) {
       return;
     }
 
-    const zeroMs = getElapsedZeroMsFromUrl();
-
-    if (zeroMs == null) {
-      onMoveBackward();
-      return;
-    }
-
+    // const zeroMs = ELAPSED_TIME_ZERO_MS;
+    const zeroMs = getElapsedPickerZeroMs(value);
     const fromMs = value.from.valueOf();
     const toMs = value.to.valueOf();
 
@@ -408,7 +291,8 @@ export function TimeRangePicker(props: TimeRangePickerProps) {
       return;
     }
 
-    const zeroMs = getElapsedZeroMsFromUrl();
+    // const zeroMs = ELAPSED_TIME_ZERO_MS;
+    const zeroMs = getElapsedPickerZeroMs(value);
 
     if (zeroMs == null) {
       onZoom();
@@ -566,20 +450,29 @@ export const TimePickerTooltip = ({ timeRange, timeZone }: { timeRange: TimeRang
 
   // Get timezone info only if timeZone is provided
   const timeZoneInfo = timeZone ? getTimeZoneInfo(timeZone, now) : undefined;
+  const zeroMs = getElapsedPickerZeroMs(timeRange);
 
+  const displayFrom = isElapsedTimeModeEnabled() ? formatElapsedTimerangeValue(timeRange.from.valueOf(), zeroMs) : dateTimeFormat(timeRange.from, { timeZone });
+
+  const displayTo = isElapsedTimeModeEnabled() ? formatElapsedTimerangeValue(timeRange.to.valueOf(), zeroMs) : dateTimeFormat(timeRange.to, { timeZone });
+  
   return (
     <>
       <div className="text-center">
-        {dateTimeFormat(timeRange.from, { timeZone })}
+        {/* {dateTimeFormat(timeRange.from, { timeZone })} */}
+        {displayFrom}
         <div className="text-center">
           <Trans i18nKey="time-picker.range-picker.to">to</Trans>
         </div>
-        {dateTimeFormat(timeRange.to, { timeZone })}
+        {/* {dateTimeFormat(timeRange.to, { timeZone })} */}
+        {displayTo}
       </div>
-      <div className={styles.container}>
-        <span className={styles.utc}>{timeZoneFormatUserFriendly(timeZone)}</span>
-        <TimeZoneDescription info={timeZoneInfo} />
-      </div>
+      {!isElapsedTimeModeEnabled() && (
+        <div className={styles.container}>
+          <span className={styles.utc}>{timeZoneFormatUserFriendly(timeZone)}</span>
+          <TimeZoneDescription info={timeZoneInfo} />
+        </div>
+      )}
     </>
   );
 };
@@ -593,6 +486,13 @@ export const TimePickerButtonLabel = memo<LabelProps>(({ hideText, value, timeZo
     return null;
   }
   const isElapsed = isElapsedTimeModeEnabled();
+
+  console.log(
+    "TimePickerButtonLabel render",
+    window.location.search,
+    isElapsedTimeModeEnabled()
+  );
+
   return (
     <span className={styles.container} aria-live="polite" aria-atomic="true">
       <span>{formattedRange(value, timeZone, quickRanges)}</span>

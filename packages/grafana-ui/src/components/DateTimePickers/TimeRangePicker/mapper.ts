@@ -1,61 +1,58 @@
-import { type TimeOption, type TimeRange, type TimeZone, rangeUtil, dateTimeFormat } from '@grafana/data';
+import { type TimeOption, type TimeRange, type TimeZone, rangeUtil, dateTimeFormat, isElapsedTimeModeEnabled } from '@grafana/data';
 
+import { getElapsedZeroMs as getElapsedZeroMsFromValue, formatElapsedTimeRangeValue } from '../../../utils/elapsedTime';
 import { getFeatureToggle } from '../../../utils/featureToggle';
 import { commonFormat } from '../commonFormat';
 
-function isElapsedTimeModeEnabled(): boolean {
-  if (typeof window === 'undefined') {
-    return false;
-  }
-
-  const params = new URLSearchParams(window.location.search);
-
-  return params.get('elapsedTimeMode') === 'true' || params.get('var-elapsedTimeMode') === 'true';
-}
-
-function getElapsedZeroMsFromUrl(): number | undefined {
-  if (typeof window === 'undefined') {
-    return undefined;
-  }
-
-  const params = new URLSearchParams(window.location.search);
-  const rawZeroMs = params.get('elapsedZeroMs') ?? params.get('var-elapsedZeroMs');
-
-  if (!rawZeroMs) {
-    return undefined;
-  }
-
-  const zeroMs = Number(rawZeroMs);
-  return Number.isFinite(zeroMs) ? zeroMs : undefined;
-}
-
-function getLocalDayStartMs(value: number): number {
-  const date = new Date(value);
-  date.setHours(0, 0, 0, 0);
-  return date.getTime();
-}
-
 function getElapsedZeroMs(range: TimeRange): number {
-  return getElapsedZeroMsFromUrl() ?? getLocalDayStartMs(range.from.valueOf());
+  return getElapsedZeroMsFromValue(range.from.valueOf());
 }
 
-function pad2(v: number): string {
-  return String(v).padStart(2, '0');
+export function normalizeElapsedinput(value: string): string {
+  const parts = value.split(':');
+
+  if (parts.length === 1) {
+    return `${parts[0]}:00:00.0000`;
+  }
+
+  if (parts.length === 2) {
+    return `${parts[0]}:${parts[1].padStart(2, '0')}:00.0000`;
+  }
+
+  if (parts.length === 3) {
+    const [hh, mm, sec] = parts;
+
+    if (!sec.includes('.')) {
+      return `${hh}:${mm.padStart(2, '0')}:${sec.padStart(2, '0')}.0000`;
+    }
+
+    const [ss, ms = ''] = sec.split('.');
+
+    return `${hh}:${mm.padStart(2, '0')}:${ss.padStart(2, '0')}.${ms.padEnd(4, '0')}`;
+  }
+
+  return value;
 }
 
-function pad4(v: number): string {
-  return String(v).padStart(4, '0');
-}
+export function parseElapsedTimeRangeValue(value: string, zeroMs: number): string {
+  value = normalizeElapsedinput(value);
+  const match = value.match(/^(\d+):(\d{2}):(\d{2})\.(\d{4})$/);
 
-function formatElapsedTimeRangeValue(value: number, zeroMs: number): string {
-  const elapsedMs = Math.max(0, value - zeroMs);
+  if (!match) {
+    return value;
+  }
 
-  const totalHours = Math.floor(elapsedMs / (60 * 60 * 1000));
-  const minutes = Math.floor((elapsedMs % (60 * 60 * 1000)) / (60 * 1000));
-  const seconds = Math.floor((elapsedMs % (60 * 1000)) / 1000);
-  const fractionalSeconds = Math.floor(((elapsedMs % 1000) / 1000) * 10000);
+  const [, hours, minutes, seconds, fractional] = match;
 
-  return `${String(totalHours).padStart(2, '0')}:${pad2(minutes)}:${pad2(seconds)}.${pad4(fractionalSeconds)}`;
+  const elapsedMs =
+    Number(hours) * 60 * 60 * 1000 +
+    Number(minutes) * 60 * 1000 +
+    Number(seconds) * 1000 +
+    Math.floor(Number(fractional) / 10);
+
+  return dateTimeFormat(zeroMs + elapsedMs, {
+    format: commonFormat,
+  });
 }
 
 /**

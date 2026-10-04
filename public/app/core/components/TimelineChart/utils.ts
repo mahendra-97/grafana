@@ -115,6 +115,8 @@ function getLocalDayStartMs(value: number): number {
   return date.getTime();
 }
 
+// let elapsedTimelineZeroMs: number | undefined;
+
 function getElapsedZeroMs(u: uPlot): number {
   const zeroMs = getElapsedZeroMsFromUrl();
 
@@ -233,6 +235,7 @@ export const preparePlotConfigBuilder: UPlotConfigPrepFn<UPlotConfigOptions> = (
     direction: ScaleDirection.Right,
     range: (u) => {
       const clampRange = (range: NumericRange): NumericRange => {
+        // return mode === TimelineMode.Changes ? clampElapsedRangeToZero(u, range) : range;
         return mode === TimelineMode.Changes && isElapsedTimeModeEnabled() ? clampElapsedRangeToZero(u, range) : range;
       };
 

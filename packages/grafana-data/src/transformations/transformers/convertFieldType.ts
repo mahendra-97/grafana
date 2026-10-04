@@ -1,6 +1,7 @@
 import { map } from 'rxjs/operators';
 
 import { type TimeZone } from '@grafana/schema';
+import { isElapsedTimeModeEnabled } from '@grafana/data';
 
 import { dateTimeParse, type DateTimeOptionsWhenParsing } from '../../datetime/parser';
 import { type DataFrame, type EnumFieldConfig, type Field, FieldType } from '../../types/dataFrame';
@@ -14,37 +15,7 @@ export interface ConvertFieldTypeTransformerOptions {
   conversions: ConvertFieldTypeOptions[];
 }
 
-function isElapsedTimeModeEnabled(): boolean {
-  if (typeof window === 'undefined') {
-    return false;
-  }
-
-  const params = new URLSearchParams(window.location.search);
-
-  return params.get('elapsedTimeMode') === 'true' || params.get('var-elapsedTimeMode') === 'true';
-}
-
-function getElapsedParseZeroMsFromUrl(): number | undefined {
-  if (typeof window === 'undefined') {
-    return undefined;
-  }
-
-  const params = new URLSearchParams(window.location.search);
-
-  const rawZeroMs =
-    params.get('elapsedParseZeroMs') ??
-    params.get('var-elapsedParseZeroMs') ??
-    params.get('elapsedZeroMs') ??
-    params.get('var-elapsedZeroMs');
-
-  if (!rawZeroMs) {
-    return undefined;
-  }
-
-  const zeroMs = Number(rawZeroMs);
-
-  return Number.isFinite(zeroMs) ? zeroMs : undefined;
-}
+const ELAPSED_TIME_ZERO_MS = 0;
 
 const elapsedDurationRegex = /^(\d+):([0-5]\d):([0-5]\d)(?:\.(\d{1,4}))?$/;
 
@@ -74,19 +45,13 @@ function parseElapsedTimestampToEpochMs(value: unknown): number | undefined {
     return undefined;
   }
 
-  const zeroMs = getElapsedParseZeroMsFromUrl();
-
-  if (zeroMs == null) {
-    return undefined;
-  }
-
   const elapsedMs = parseElapsedDurationMs(value);
 
   if (elapsedMs == null) {
     return undefined;
   }
 
-  return zeroMs + elapsedMs;
+  return ELAPSED_TIME_ZERO_MS + elapsedMs;
 }
 
 export interface ConvertFieldTypeOptions {

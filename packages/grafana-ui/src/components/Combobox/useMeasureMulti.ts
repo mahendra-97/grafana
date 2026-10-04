@@ -8,7 +8,7 @@ import { type ComboboxOption } from './types';
 const FONT_SIZE = 12;
 const EXTRA_PILL_SIZE = 50;
 const EXTRA_PILL_DISABLED_SIZE = 10;
-export const MAX_SHOWN_ITEMS = 15;
+export const MAX_SHOWN_ITEMS = 6;
 
 /**
  * Updates the number of shown items in the multi combobox based on the available width.

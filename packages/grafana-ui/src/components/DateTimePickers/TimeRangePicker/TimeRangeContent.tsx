@@ -12,21 +12,27 @@ import {
   type RawTimeRange,
   type TimeRange,
   type TimeZone,
+  isElapsedTimeModeEnabled,
 } from '@grafana/data';
 import { selectors } from '@grafana/e2e-selectors';
 import { t, Trans } from '@grafana/i18n';
 
 import { useStyles2 } from '../../../themes/ThemeContext';
+import { formatElapsedTimeRangeValue } from '../../../utils/elapsedTime';
 import { Button } from '../../Button/Button';
 import { Field } from '../../Forms/Field';
 import { Icon } from '../../Icon/Icon';
 import { Input } from '../../Input/Input';
 import { Tooltip } from '../../Tooltip/Tooltip';
+import { getElapsedPickerZeroMs } from '../TimeRangePicker';
 import { type WeekStart } from '../WeekStartPicker';
 import { commonFormat } from '../commonFormat';
 import { isValid } from '../utils';
 
 import TimePickerCalendar from './TimePickerCalendar';
+import { parseElapsedTimeRangeValue } from './mapper';
+
+
 
 interface Props {
   isFullscreen: boolean;
@@ -62,7 +68,7 @@ export const TimeRangeContent = (props: Props) => {
     onError,
     weekStart,
   } = props;
-  const [fromValue, toValue] = valueToState(value.raw.from, value.raw.to, timeZone);
+  const [fromValue, toValue] = valueToState(value.raw.from, value.raw.to, timeZone, value);
   const style = useStyles2(getStyles);
 
   const [from, setFrom] = useState<InputState>(fromValue);
@@ -74,7 +80,7 @@ export const TimeRangeContent = (props: Props) => {
 
   // Synchronize internal state with external value
   useEffect(() => {
-    const [fromValue, toValue] = valueToState(value.raw.from, value.raw.to, timeZone);
+    const [fromValue, toValue] = valueToState(value.raw.from, value.raw.to, timeZone, value);
     setFrom(fromValue);
     setTo(toValue);
   }, [value.raw.from, value.raw.to, timeZone]);
@@ -92,11 +98,26 @@ export const TimeRangeContent = (props: Props) => {
       return;
     }
 
-    const raw: RawTimeRange = { from: from.value, to: to.value };
-    const timeRange = rangeUtil.convertRawToRange(raw, timeZone, fiscalYearStartMonth, commonFormat);
+    let rawFrom = from.value;
+    let rawTo = to.value;
+
+    if (isElapsedTimeModeEnabled()) {
+      const zeroMs = getElapsedPickerZeroMs(value);
+
+      rawFrom = parseElapsedTimeRangeValue(rawFrom, zeroMs);
+      rawTo = parseElapsedTimeRangeValue(rawTo, zeroMs);
+    }
+
+    const raw: RawTimeRange = { from: rawFrom, to: rawTo };
+    const timeRange = rangeUtil.convertRawToRange(
+      raw,
+      timeZone,
+      fiscalYearStartMonth,
+      commonFormat
+    );
 
     onApplyFromProps(timeRange);
-  }, [from.invalid, from.value, onApplyFromProps, timeZone, to.invalid, to.value, fiscalYearStartMonth]);
+  }, [from.invalid, from.value, to.invalid, to.value, value, onApplyFromProps, timeZone, fiscalYearStartMonth]);
 
   const onChange = useCallback(
     (from: DateTime | string, to: DateTime | string) => {
@@ -165,11 +186,17 @@ export const TimeRangeContent = (props: Props) => {
     />
   );
 
+  // const fromLabel = 'FROM TEST';
+  const fromLabel = isElapsedTimeModeEnabled() ? `${t('time-picker.range-content.from-input', 'From')} (HH:MM:SS.SSSS)` : t('time-picker.range-content.from-input', 'From');
+  // const toLabel = 'TO TEST';
+  const toLabel = isElapsedTimeModeEnabled() ? `${t('time-picker.range-content.from-input', 'From')} (HH:MM:SS.SSSS)` : t('time-picker.range-content.to-input', 'To');
+
   return (
     <div>
       <div className={style.fieldContainer}>
         <Field
-          label={t('time-picker.range-content.from-input', 'From')}
+          // label={t('time-picker.range-content.from-input', 'From')}
+          label={fromLabel}
           invalid={from.invalid}
           error={from.errorMessage}
         >
@@ -186,7 +213,8 @@ export const TimeRangeContent = (props: Props) => {
         {fyTooltip}
       </div>
       <div className={style.fieldContainer}>
-        <Field label={t('time-picker.range-content.to-input', 'To')} invalid={to.invalid} error={to.errorMessage}>
+        {/* <Field label={t('time-picker.range-content.to-input', 'To')} invalid={to.invalid} error={to.errorMessage}> */}
+        <Field label={toLabel} invalid={to.invalid} error={to.errorMessage}></Field>
           <Input
             id={toFieldId}
             onClick={(event) => event.stopPropagation()}
@@ -238,8 +266,15 @@ export const TimeRangeContent = (props: Props) => {
 };
 
 function isRangeInvalid(from: string, to: string, timezone?: string): boolean {
+  if (isElapsedTimeModeEnabled()) {
+    const fromMs = parseElapsedTimeRangeValue(from, 0);
+    const toMs = parseElapsedTimeRangeValue(to, 0);
+
+    return fromMs > toMs;
+  }
   const raw: RawTimeRange = { from, to };
   const timeRange = rangeUtil.convertRawToRange(raw, timezone, undefined, commonFormat);
+  
   const valid = timeRange.from.isSame(timeRange.to) || timeRange.from.isBefore(timeRange.to);
 
   return !valid;
@@ -248,10 +283,11 @@ function isRangeInvalid(from: string, to: string, timezone?: string): boolean {
 function valueToState(
   rawFrom: DateTime | string,
   rawTo: DateTime | string,
-  timeZone?: TimeZone
+  timeZone?: TimeZone,
+  timeRange?: TimeRange
 ): [InputState, InputState] {
-  const fromValue = valueAsString(rawFrom, timeZone);
-  const toValue = valueAsString(rawTo, timeZone);
+  const fromValue = valueAsString(rawFrom, timeZone, timeRange);
+  const toValue = valueAsString(rawTo, timeZone, timeRange);
   const fromInvalid = !isValid(fromValue, false, timeZone);
   const toInvalid = !isValid(toValue, true, timeZone);
   // If "To" is invalid, we should not check the range anyways
@@ -267,7 +303,23 @@ function valueToState(
   ];
 }
 
-function valueAsString(value: DateTime | string, timeZone?: TimeZone): string {
+function valueAsString(value: DateTime | string, timeZone?: TimeZone, timeRange?: TimeRange): string {
+
+  if (isElapsedTimeModeEnabled()) {
+    const zeroMs = getElapsedPickerZeroMs(timeRange);
+
+    if (isDateTime(value)) {
+      return formatElapsedTimeRangeValue(value.valueOf(), zeroMs);
+    }
+
+    if (value.endsWith('Z')) {
+      const dt = dateTimeParse(value);
+      return formatElapsedTimeRangeValue(dt.valueOf(), zeroMs);
+    }
+
+    return value;
+  }
+
   if (isDateTime(value)) {
     return dateTimeFormat(value, { timeZone, format: commonFormat });
   }

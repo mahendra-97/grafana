@@ -44,6 +44,8 @@ const pieChartPanel = async () =>
 const statPanel = async () => await import(/* webpackChunkName: "statPanel" */ 'app/plugins/panel/stat/module');
 const stateTimelinePanel = async () =>
   await import(/* webpackChunkName: "stateTimelinePanel" */ 'app/plugins/panel/state-timeline/module');
+const elapsedStateTimelinePanel = async () =>
+  await import(/* webpackChunkName: "elapsedStateTimelinePanel" */ 'app/plugins/panel/elapsed-state-timeline/module');
 const statusHistoryPanel = async () =>
   await import(/* webpackChunkName: "statusHistoryPanel" */ 'app/plugins/panel/status-history/module');
 const tablePanel = async () => await import(/* webpackChunkName: "tablePanel" */ 'app/plugins/panel/table/module');
@@ -78,6 +80,7 @@ const builtInPlugins: Record<string, System.Module | (() => Promise<System.Modul
   'core:plugin/timeseries': timeseriesPanel,
   'core:plugin/trend': trendPanel,
   'core:plugin/state-timeline': stateTimelinePanel,
+  'core:plugin/elapsed-state-timeline': elapsedStateTimelinePanel,
   'core:plugin/status-history': statusHistoryPanel,
   'core:plugin/candlestick': candlestickPanel,
   'core:plugin/xychart': xychartPanel,

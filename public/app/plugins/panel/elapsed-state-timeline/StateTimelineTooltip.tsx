@@ -9,6 +9,7 @@ import {
   VizTooltipHeader,
   VizTooltipWrapper,
   getContentItems,
+  formatElapsedValue,
   type VizTooltipItem,
 } from '@grafana/ui/internal';
 import { findNextStateIndex, fmtDuration } from 'app/core/components/TimelineChart/utils';
@@ -40,8 +41,20 @@ export const StateTimelineTooltip = ({
   const xField = series.fields[0];
 
   const dataIdx = seriesIdx != null ? dataIdxs[seriesIdx] : dataIdxs.find((idx) => idx != null);
+  const timerangeFromMs = timeRange.from.valueOf();
+  const elapsedOriginMs = 30 * 60 * 1000;
 
-  const xVal = xField.display!(xField.values[dataIdx!]).text;
+  const zeroMs = Math.floor(timerangeFromMs / elapsedOriginMs) * elapsedOriginMs;
+
+  if (dataIdx == null) {
+    return null;
+  }
+
+  const foundIncr = 1;
+
+  const timestamp = Number(xField.values[dataIdx!]);
+
+  const xVal = formatElapsedValue(timestamp - zeroMs, foundIncr);
 
   mode = isPinned ? TooltipDisplayMode.Single : mode;
 
@@ -89,7 +102,8 @@ export const StateTimelineTooltip = ({
 
   const headerItem: VizTooltipItem = {
     label: xField.type === FieldType.time ? '' : (xField.state?.displayName ?? xField.name),
-    value: endTime ? xVal + ' - \n' + xField.display!(endTime).text : xVal,
+    // value: endTime ? xVal + ' - \n' + xField.display!(endTime).text : xVal,
+    value: endTime ? `${xVal} - \n${formatElapsedValue(Number(endTime) - zeroMs, foundIncr)}` : xVal,
   };
 
   return (

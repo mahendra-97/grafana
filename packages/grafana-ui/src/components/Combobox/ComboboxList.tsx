@@ -136,7 +136,12 @@ export const ComboboxList = <T extends string | number>({
                   id: itemId,
                   'aria-describedby': groupHeaderId,
                 })}
-              >
+                onMouseDown={(e) => {
+                  const target = e.target as HTMLElement;
+                  if (target.closest('input[type="checkbox"]')) {
+                    e.preventDefault();
+                  }
+                }}
                 {isMultiSelect && (
                   <div className={styles.optionAccessory}>
                     {!item.infoOption && (

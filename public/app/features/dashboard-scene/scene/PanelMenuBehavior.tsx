@@ -1,6 +1,7 @@
 import { firstValueFrom } from 'rxjs';
 
 import {
+  BusEventWithPayload,
   getTimeZone,
   type InterpolateFunction,
   type LinkModel,
@@ -9,6 +10,7 @@ import {
   type PanelPlugin,
   type PluginExtensionPanelContext,
   PluginExtensionPoints,
+  store,
   urlUtil,
 } from '@grafana/data';
 import { t } from '@grafana/i18n';
@@ -43,6 +45,20 @@ import { VizPanelLinks, type VizPanelLinksMenu } from './PanelLinks';
 import { UnlinkLibraryPanelModal } from './UnlinkLibraryPanelModal';
 import { PanelTimeRangeDrawer } from './panel-timerange/PanelTimeRangeDrawer';
 
+export class ElaspedTimeCheckerEvent extends BusEventWithPayload<{
+  panelId: number;
+  enabled: boolean;
+}> {
+  static type = 'elapsed-time-checker';
+}
+
+export class FieldSelectionEvent extends BusEventWithPayload<{
+  panelId: number;
+  enabled: boolean;
+}> {
+  static type = 'field-selection';
+}
+
 /**
  * Behavior is called when VizPanelMenu is activated (ie when it's opened).
  */
@@ -59,7 +75,9 @@ export function panelMenuBehavior(menu: VizPanelMenu) {
     const { isEmbedded } = dashboard.state.meta;
     const exploreMenuItem = await getExploreMenuItem(panel);
     const isReadOnlyRepeat = isRepeatCloneOrChildOf(panel);
-
+    const isTimeDifferenceEnabled = store.get('elapsed-time-checker-enabled');
+    const fieldSelectionEnabled = store.get('field-selection-enabled');
+    
     // For embedded dashboards we only have explore action for now
     if (isEmbedded) {
       if (exploreMenuItem) {
@@ -97,6 +115,34 @@ export function panelMenuBehavior(menu: VizPanelMenu) {
         },
       });
     }
+
+    items.push({
+      text: t('panel.header-menu.time-delta-markers', 'Time Delta Markers'),
+      iconClassName: 'clock-nine',
+      onClick: () => {
+        const enabled = isTimeDifferenceEnabled === 'true' ? 'false' : 'true';
+        store.set('elapsed-time-checker-enabled', enabled);
+        const eventBus = panel.getPanelContext().eventBus;
+        eventBus.publish(new ElaspedTimeCheckerEvent({
+          panelId: getPanelIdForVizPanel(panel),
+          enabled: enabled === 'true',
+        }));
+      },
+    });
+
+    items.push({
+      text: t('panel.header-menu.field-selection', 'Field Selecion'),
+      iconClassName: 'filter',
+      onClick: () => {
+        const enabled = fieldSelectionEnabled === 'true' ? 'false' : 'true';
+        store.set('field-selection-enabled', enabled);
+        const eventBus = panel.getPanelContext().eventBus;
+        eventBus.publish(new FieldSelectionEvent({
+          panelId: getPanelIdForVizPanel(panel),
+          enabled: enabled === 'true',
+        }));
+      },
+    });
 
     const subMenu: PanelMenuItem[] = [];
     subMenu.push({

@@ -10,6 +10,44 @@ import { SortOrder, TooltipDisplayMode } from '@grafana/schema';
 import { type ColorIndicatorStyles } from './VizTooltipColorIndicator';
 import { ColorIndicator, ColorPlacement, type VizTooltipItem } from './types';
 
+const timeUnitSize = {
+  second: 1000,
+  minute: 60 * 1000,
+  hour: 60 * 60 * 1000,
+  day: 24 * 60 * 60 * 1000,
+  month: 28 * 24 * 60 * 60 * 1000,
+  year: 365 * 24 * 60 * 60 * 1000,
+};
+
+function pad2(v: number): string {
+  return String(v).padStart(2, '0');
+}
+
+export function formatElapsedValue(elapsedMs: number, foundIncr: number): string {
+  const clamped = Math.max(0, elapsedMs);
+
+  const totalHours = Math.floor(clamped / timeUnitSize.hour);
+  const minutes = Math.floor((clamped % timeUnitSize.hour) / timeUnitSize.minute);
+  const seconds = Math.floor((clamped % timeUnitSize.minute) / timeUnitSize.second);
+
+  // 4 fractional digits of seconds. If values are millisecond-based, the 4th digit will naturally be 0.
+  const fractionalSeconds = Math.floor(((clamped % timeUnitSize.second) / timeUnitSize.second) * 10000);
+
+  const hh = String(totalHours).padStart(2, '0');
+  const mm = pad2(minutes);
+  const ss = pad2(seconds);
+
+  if (foundIncr < timeUnitSize.second) {
+    return `${hh}:${mm}:${ss}.${String(fractionalSeconds).padStart(4, '0')}`;
+  }
+
+  if (foundIncr < timeUnitSize.minute) {
+    return `${hh}:${mm}:${ss}`;
+  }
+
+  return `${hh}:${mm}`;
+}
+
 export const calculateTooltipPosition = (
   xPos = 0,
   yPos = 0,

@@ -69,6 +69,22 @@ export class PanelOptionsPane extends SceneObjectBase<PanelOptionsPaneState> {
     const { options: prevOptions, fieldConfig: prevFieldConfig, pluginId: prevPluginId } = panel.state;
     const pluginId = options.pluginId;
 
+    if (pluginId === 'elapsed-state-timeline') {
+      locationService.partial(
+        {
+          elapsedTimeMode: 'true',
+        },
+        true
+      );
+    } else {
+      locationService.partial(
+        {
+          elapsedTimeMode: undefined,
+        },
+        true
+      );
+    }
+
     reportInteraction(INTERACTION_EVENT_NAME, {
       item: INTERACTION_ITEM.SELECT_PANEL_PLUGIN,
       plugin_id: pluginId,
@@ -102,6 +118,19 @@ export class PanelOptionsPane extends SceneObjectBase<PanelOptionsPaneState> {
 
     panel.changePluginType(pluginId, cachedOptions, newFieldConfig);
 
+    setTimeout(() => {
+      // const refreshButton = document.querySelector(
+      //   '[data-testid="RefreshPicker.runButtonV2"]'
+      // ) as HTMLButtonElement | null;
+      // refreshButton?.click();
+      console.log("Triggering grafana refresh..");
+      (
+        // document.querySelector('button[aria-label="Refresh"]')?.click();
+        document.querySelector('button[aria-label="Refresh"]') as HTMLButtonElement | null
+      )?.click();
+    }, 300);
+    window.dispatchEvent(new Event('elapsed-time-mode-change'));
+    
     if (options.options) {
       panel.onOptionsChange(options.options, true);
     }

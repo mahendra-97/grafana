@@ -416,6 +416,7 @@ export {
   dateTimeFormatWithAbbrevation,
   timeZoneAbbrevation,
 } from './datetime/formatter';
+export { isElapsedTimeModeEnabled } from './datetime/isElapsedTimeModeEnabled';
 export { type DateTimeOptionsWhenParsing, dateTimeParse } from './datetime/parser';
 export {
   intervalToAbbreviatedDurationString,
