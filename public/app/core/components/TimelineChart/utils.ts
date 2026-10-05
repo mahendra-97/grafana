@@ -127,7 +127,7 @@ function getElapsedZeroMs(u: uPlot): number {
   const firstX = getFirstFiniteXValue(u);
 
   if (firstX == null) {
-    return 0;
+     return 0;
   }
 
   return getLocalDayStartMs(firstX);

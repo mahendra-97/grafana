@@ -28,7 +28,7 @@ export function normalizeElapsedinput(value: string): string {
 
     const [ss, ms = ''] = sec.split('.');
 
-    return `${hh}:${mm.padStart(2, '0')}:${ss.padStart(2, '0')}.${ms.padEnd(4, '0')}`;
+    return `${hh}:${mm.padStart(2,'0')}:${ss.padStart(2,'0')}.${ms.padEnd(4,'0')}`;
   }
   return value;
 }

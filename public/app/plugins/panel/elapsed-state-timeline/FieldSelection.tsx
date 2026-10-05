@@ -51,7 +51,7 @@ export const FieldSelection = ({ onApply, onClose }: FieldSelectionProps) => {
       <MultiCombobox
         options={fieldOptions}
         value={localSelectedFields}
-        placeholder={t('elapsed-state-timeline.select-fields', 'Select fields')}
+        placeholder={t('elapsed-state-timeline.select-fields','Select fields')}
         enableAllOption={true}
         onChange={(values)=> {setLocalSelectedFields(values.map((value) => value.value))}}
       />

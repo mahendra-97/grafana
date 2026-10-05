@@ -131,7 +131,7 @@ export function panelMenuBehavior(menu: VizPanelMenu) {
     });
 
     items.push({
-      text: t('panel.header-menu.field-selection', `Field Selection`),
+      text: t('panel.header-menu.field-selection', `Field Selecion`),
       iconClassName: 'filter',
       onClick: () => {
         const enabled = fieldSelectionEnabled === 'true' ? 'false' : 'true';

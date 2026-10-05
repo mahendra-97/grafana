@@ -37,7 +37,7 @@ import { useTimeSync } from './utils/useTimeSync';
 import { formatElapsedTimeRangeValue } from '../../utils/elapsedTime';
 
 // import { timeRangeToRelative } from '../../../../grafana-data/src/datetime/rangeutil';
-// import { useForceUpdate } from '../../hooks/useForceUpdate';
+// import { useForceUpdate } from 'src/utils/useForceUpdate';
 
 /** @public */
 export interface TimeRangePickerProps {
@@ -95,7 +95,7 @@ function formatElapsedTimeRange(value: TimeRange): string {
   return `${formatElapsedTimeRangeValue(value.from.valueOf(), zeroMs)} to ${formatElapsedTimeRangeValue(value.to.valueOf(), zeroMs)}`;
 }
 
-function clampElapsedTimerangeToZero(value: TimeRange): TimeRange {
+function clampElapsedTimeRangeToZero(value: TimeRange): TimeRange {
   if (!isElapsedTimeModeEnabled()) {
     return value;
   }
@@ -182,7 +182,7 @@ export function TimeRangePicker(props: TimeRangePickerProps) {
   });
 
   const onChange = (timeRange: TimeRange) => {
-    onChangeWithSync(clampElapsedTimerangeToZero(timeRange));
+    onChangeWithSync(clampElapsedTimeRangeToZero(timeRange));
     setOpen(false);
   };
 
@@ -195,12 +195,12 @@ export function TimeRangePicker(props: TimeRangePickerProps) {
   // useEffect(() => {
   //     const handler = () => useForceUpdate();
 
-  //     window.addEventListener('elapsed-time-mode-change', handler);
-
+  //     window.addEventListener('elapsed-time-mode-change',handler);
+      
   //     return () => {
-  //       window.removeEventListener('elapsed-time-mode-change', handler);
+  //       window.removeEventListener('elapsed-time-mode-change',handler);
   //     };
-  //    }, []
+  //   }, []
   // );
 
   const onToolbarButtonSwitch = () => {
@@ -455,7 +455,7 @@ export const TimePickerTooltip = ({ timeRange, timeZone }: { timeRange: TimeRang
   const displayFrom = isElapsedTimeModeEnabled() ? formatElapsedTimeRangeValue( timeRange.from.valueOf(), zeroMs) :dateTimeFormat(timeRange.from, { timeZone });
 
   const displayTo = isElapsedTimeModeEnabled() ? formatElapsedTimeRangeValue(timeRange.to.valueOf(), zeroMs) :dateTimeFormat(timeRange.to, { timeZone });
-  
+
   return (
     <>
       <div className="text-center">

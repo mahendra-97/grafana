@@ -22,7 +22,7 @@ import {
 } from 'app/core/components/TimelineChart/utils';
 import { ElaspedTimeCheckerEvent, FieldSelectionEvent } from 'app/features/dashboard-scene/scene/PanelMenuBehavior';
 
-import { AnnotationsPlugin } from '../timeseries/plugins/AnnotationsPlugin';
+import { AnnotationPlugin } from '../timeseries/plugins/AnnotationsPlugin';
 import { OutsideRangePlugin } from '../timeseries/plugins/OutsideRangePlugin';
 import { getXAnnotationFrames } from '../timeseries/plugins/utils';
 import { getTimezones } from '../timeseries/utils';
@@ -374,7 +374,7 @@ export const ElapsedStateTimelinePanel = ({
                 />
               )}
               {alignedFrame.fields[0].config.custom?.axisPlacement !== AxisPlacement.Hidden && (
-                <AnnotationsPlugin
+                <AnnotationPlugin
                   replaceVariables={replaceVariables}
                   options={options.annotations}
                   annotations={data.annotations}

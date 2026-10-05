@@ -56,9 +56,9 @@ export const ElapsedStateControls = ({ onApply, onClose }: ElapsedStateControlsP
       <MultiCombobox
         options={fieldOptions}
         value={localSelectedFields}
-        placeholder={t('elapsed-state-timeline.select-fields', 'Select fields')}
+        placeholder={t('elapsed-state-timeline.select-fields','Select fields')}
         enableAllOption={true}
-        onChange={(values) => { setLocalSelectedFields(values.map((value) => value.value)) }}
+        onChange={(values)=> {setLocalSelectedFields(values.map((value) => value.value)) }}
       />
       <Button onClick={handleApply}>
         <Trans i18nKey="elapsed-state-timeline.apply">
@@ -66,7 +66,7 @@ export const ElapsedStateControls = ({ onApply, onClose }: ElapsedStateControlsP
         </Trans>
       </Button>
       <Button>
-        <span
+        <span 
           onClick={(event) => {
             event.stopPropagation();
             closeFieldSelection();
