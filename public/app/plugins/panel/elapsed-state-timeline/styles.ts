@@ -68,7 +68,7 @@ export const timeDifference = css({
   alignItems: 'center',
   width: '100%',
   marginLeft: '15px',
-  height: '33px',
+  height: '33px'
 });
 
 export const menuItemFieldcloseIcon = css({

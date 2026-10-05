@@ -44,7 +44,7 @@ const pieChartPanel = async () =>
 const statPanel = async () => await import(/* webpackChunkName: "statPanel" */ 'app/plugins/panel/stat/module');
 const stateTimelinePanel = async () =>
   await import(/* webpackChunkName: "stateTimelinePanel" */ 'app/plugins/panel/state-timeline/module');
-const elapsedStateTimelinePanel = async () =>
+const elapsedStateTimelinePanel = async () => 
   await import(/* webpackChunkName: "elapsedStateTimelinePanel" */ 'app/plugins/panel/elapsed-state-timeline/module');
 const statusHistoryPanel = async () =>
   await import(/* webpackChunkName: "statusHistoryPanel" */ 'app/plugins/panel/status-history/module');

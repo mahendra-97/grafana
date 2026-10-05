@@ -5,7 +5,7 @@ interface TimeMarkerProps {
   type: 'start' | 'end';
   onPointerDown: (
     event: React.PointerEvent,
-    marker: 'start' | 'end'
+    marker: 'start' | 'end',
   ) => void;
 }
 
@@ -19,7 +19,7 @@ export const TimeMarker = ({ position, type, onPointerDown }: TimeMarkerProps) =
       onPointerDown={(event) => {
         onPointerDown(event, type);
       }}>
-      <div className={timeMarkerPointer}></div>
+        <div className={timeMarkerPointer}></div>
     </div>
-  );
-};
+  )
+}

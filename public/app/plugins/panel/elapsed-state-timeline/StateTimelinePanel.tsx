@@ -131,7 +131,7 @@ export const ElapsedStateTimelinePanel = ({
     if (!draggingMarker) {
       return;
     }
-    const timelineElement = timelineRef.current;
+    const timelineElement =  timelineRef.current;
     if (!timelineElement) {
       return;
     }
@@ -197,11 +197,11 @@ export const ElapsedStateTimelinePanel = ({
       elapsedSubscription.unsubscribe();
       fieldSubscription.unsubscribe();
     };
-  }, [eventBus, panelId]);
+  },[eventBus, panelId]);
 
   useEffect(() => {
     if (previousTelemetryId.current !== telemetryId) {
-      let allFields = fieldOptions.map((field) => field.value);
+      let allFields = (fieldOptions.map((field) => field.value));
       store.set("elapsed-state-selected-fields", JSON.stringify(allFields));
       setAppliedFields(allFields);
       previousTelemetryId.current = telemetryId;
@@ -213,7 +213,7 @@ export const ElapsedStateTimelinePanel = ({
   };
 
   const handleFieldSelectionClose = () => {
-    const allFields = fieldOptions.map((field) => field.value);
+    const allFields = (fieldOptions.map((field) => field.value));
     setShowFieldSelection(false);
     setAppliedFields(allFields);
     store.set("elapsed-state-selected-fields", JSON.stringify(allFields));
@@ -229,7 +229,7 @@ export const ElapsedStateTimelinePanel = ({
       fields: frame.fields.filter((field) => field.type === FieldType.time || appliedFields.includes(field.name)),
     }));
   }, [data.series, appliedFields]);
-  
+
   const { frames, warn } = useMemo(
     () => prepareTimelineFields(filteredSeries, options.mergeValues ?? true, timeRange, theme),
     [filteredSeries, options.mergeValues, timeRange, theme]
@@ -264,7 +264,7 @@ export const ElapsedStateTimelinePanel = ({
       <div className={elapsedStateControlsContainer}>
         {showTimeDurationButton && (
           <button
-            onClick={() => setShowTimeMarker((prev) => prev === false ? true : true)}
+            onClick={() => setShowTimeMarker((prev) => prev === false ? !prev : true)}
             className={checkDurationButton}
           >
             <Trans i18nKey="elapsed-state-timeline.check-time-duration">
@@ -274,7 +274,7 @@ export const ElapsedStateTimelinePanel = ({
                     <span>
                       Time Difference - {formatDuration(markerDuration)}
                     </span>
-                    <span
+                    <span 
                       onClick={(event) => {
                         event.stopPropagation();
                         setShowTimeDurationButton(false);
@@ -283,7 +283,7 @@ export const ElapsedStateTimelinePanel = ({
                       }}
                       className={menuItemFieldcloseIcon}
                     >
-                      <Icon name="times" size="lg" />
+                      <Icon name='times' size='lg' />
                     </span>
                   </div>
                 )
@@ -292,13 +292,13 @@ export const ElapsedStateTimelinePanel = ({
           </button>
         )
         }
-        {showFieldSelection && (
+        {showFieldSelection && 
           <FieldSelection
             key={previousTelemetryId.current}
             onApply={handleApplyFields}
             onClose={handleFieldSelectionClose}
           />
-        )}
+        }
       </div>
       <TimelineChart
         key={appliedFields.join('|')}

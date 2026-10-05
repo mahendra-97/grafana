@@ -16,21 +16,20 @@ export function normalizeElapsedinput(value: string): string {
   }
 
   if (parts.length === 2) {
-    return `${parts[0]}:${parts[1].padStart(2, '0')}:00.0000`;
+    return `${parts[0]}:${parts[1].padStart(2,'0')}:00.0000`;
   }
 
   if (parts.length === 3) {
     const [hh, mm, sec] = parts;
 
     if (!sec.includes('.')) {
-      return `${hh}:${mm.padStart(2, '0')}:${sec.padStart(2, '0')}.0000`;
+      return `${hh}:${mm.padStart(2,'0')}:${sec.padStart(2,'0')}.0000`;
     }
 
     const [ss, ms = ''] = sec.split('.');
 
     return `${hh}:${mm.padStart(2, '0')}:${ss.padStart(2, '0')}.${ms.padEnd(4, '0')}`;
   }
-
   return value;
 }
 
@@ -44,7 +43,7 @@ export function parseElapsedTimeRangeValue(value: string, zeroMs: number): strin
 
   const [, hours, minutes, seconds, fractional] = match;
 
-  const elapsedMs =
+  const elapsedMs = 
     Number(hours) * 60 * 60 * 1000 +
     Number(minutes) * 60 * 1000 +
     Number(seconds) * 1000 +
@@ -53,6 +52,7 @@ export function parseElapsedTimeRangeValue(value: string, zeroMs: number): strin
   return dateTimeFormat(zeroMs + elapsedMs, {
     format: commonFormat,
   });
+
 }
 
 /**

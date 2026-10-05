@@ -36,7 +36,7 @@ export const ElapsedStateControls = ({ onApply, onClose }: ElapsedStateControlsP
       fieldsToApply = fieldOptions.map((field) => field.value);
     }
     setLocalSelectedFields(fieldsToApply);
-    store.set('elapsed-state-selected-fields', JSON.stringify(fieldsToApply));
+    store.set("elapsed-state-selected-fields", JSON.stringify(fieldsToApply));
     onApply(fieldsToApply);
   }
 
@@ -49,16 +49,16 @@ export const ElapsedStateControls = ({ onApply, onClose }: ElapsedStateControlsP
   return (
     <div className={elaspsedStateControlsStyles}>
       {/* <label>
-      <Trans i18nKey="elapsed-state-timeline.fields">
-        Fields
-      </Trans>
+        <Trans i18nKey="elapsed-state-timeline.fields">
+          Fields
+        </Trans>
       </label> */}
       <MultiCombobox
         options={fieldOptions}
         value={localSelectedFields}
         placeholder={t('elapsed-state-timeline.select-fields', 'Select fields')}
         enableAllOption={true}
-        onChange={(values) => { setLocalSelectedFields(values.map((value) => value.value))}}
+        onChange={(values) => { setLocalSelectedFields(values.map((value) => value.value)) }}
       />
       <Button onClick={handleApply}>
         <Trans i18nKey="elapsed-state-timeline.apply">
@@ -72,12 +72,12 @@ export const ElapsedStateControls = ({ onApply, onClose }: ElapsedStateControlsP
             closeFieldSelection();
           }}
           style={{
-            cursor: 'pointer',
+            cursor: 'pointer'
           }}
         >
-          <Icon name="times" size="lg" />
+          <Icon name='times' size='lg' />
         </span>
       </Button>
     </div>
-  );
-};
+  )
+}

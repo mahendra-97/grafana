@@ -17,7 +17,7 @@ interface FieldSelectionProps {
 }
 
 export const FieldSelection = ({ onApply, onClose }: FieldSelectionProps) => {
-    
+
   const [localSelectedFields, setLocalSelectedFields] = useState<string[]>(() => {
     const savedFields = store.get('elapsed-state-selected-fields');
     if (!savedFields) {
@@ -36,7 +36,7 @@ export const FieldSelection = ({ onApply, onClose }: FieldSelectionProps) => {
       fieldsToApply = fieldOptions.map((field) => field.value);
     }
     setLocalSelectedFields(fieldsToApply);
-    store.set('elapsed-state-selected-fields', JSON.stringify(fieldsToApply));
+    store.set("elapsed-state-selected-fields", JSON.stringify(fieldsToApply));
     onApply(fieldsToApply);
   }
 
@@ -53,9 +53,7 @@ export const FieldSelection = ({ onApply, onClose }: FieldSelectionProps) => {
         value={localSelectedFields}
         placeholder={t('elapsed-state-timeline.select-fields', 'Select fields')}
         enableAllOption={true}
-        onChange={(values) => {
-          setLocalSelectedFields(values.map((value) => value.value));
-        }}
+        onChange={(values)=> {setLocalSelectedFields(values.map((value) => value.value))}}
       />
       <Button onClick={handleApply}>
         <Trans i18nKey="elapsed-state-timeline.apply">
@@ -63,18 +61,18 @@ export const FieldSelection = ({ onApply, onClose }: FieldSelectionProps) => {
         </Trans>
       </Button>
       <Button>
-        <span
+        <span 
           onClick={(event) => {
             event.stopPropagation();
             closeFieldSelection();
           }}
           style={{
-            cursor: 'pointer',
+            cursor: 'pointer'
           }}
         >
-          <Icon name="times" size="lg" />
+          <Icon name='times' size='lg' />
         </span>
       </Button>
     </div>
-  );
-};
+  )
+}

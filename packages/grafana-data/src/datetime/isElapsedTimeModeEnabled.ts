@@ -1,4 +1,4 @@
-function isElapsedTimeModeEnabled(): boolean {
+export function isElapsedTimeModeEnabled(): boolean {
   if (typeof window === 'undefined') {
     return false;
   }

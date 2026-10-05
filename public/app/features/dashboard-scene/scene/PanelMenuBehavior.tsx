@@ -46,15 +46,15 @@ import { UnlinkLibraryPanelModal } from './UnlinkLibraryPanelModal';
 import { PanelTimeRangeDrawer } from './panel-timerange/PanelTimeRangeDrawer';
 
 export class ElaspedTimeCheckerEvent extends BusEventWithPayload<{
-  panelId: number;
-  enabled: boolean;
+  panelId: number,
+  enabled: boolean
 }> {
   static type = 'elapsed-time-checker';
 }
 
 export class FieldSelectionEvent extends BusEventWithPayload<{
-  panelId: number;
-  enabled: boolean;
+  panelId: number,
+  enabled: boolean
 }> {
   static type = 'field-selection';
 }
@@ -77,7 +77,7 @@ export function panelMenuBehavior(menu: VizPanelMenu) {
     const isReadOnlyRepeat = isRepeatCloneOrChildOf(panel);
     const isTimeDifferenceEnabled = store.get('elapsed-time-checker-enabled');
     const fieldSelectionEnabled = store.get('field-selection-enabled');
-    
+
     // For embedded dashboards we only have explore action for now
     if (isEmbedded) {
       if (exploreMenuItem) {
@@ -117,29 +117,29 @@ export function panelMenuBehavior(menu: VizPanelMenu) {
     }
 
     items.push({
-      text: t('panel.header-menu.time-delta-markers', 'Time Delta Markers'),
+      text: t('panel.header-menu.time-delta-markers', `Time Delta Markers`),
       iconClassName: 'clock-nine',
       onClick: () => {
         const enabled = isTimeDifferenceEnabled === 'true' ? 'false' : 'true';
-        store.set('elapsed-time-checker-enabled', enabled);
+        store.set('elapsed-time-checker-enabled', enabled)
         const eventBus = panel.getPanelContext().eventBus;
         eventBus.publish(new ElaspedTimeCheckerEvent({
           panelId: getPanelIdForVizPanel(panel),
-          enabled: enabled === 'true',
+          enabled: enabled === 'true'
         }));
       },
     });
 
     items.push({
-      text: t('panel.header-menu.field-selection', 'Field Selecion'),
+      text: t('panel.header-menu.field-selection', `Field Selection`),
       iconClassName: 'filter',
       onClick: () => {
         const enabled = fieldSelectionEnabled === 'true' ? 'false' : 'true';
-        store.set('field-selection-enabled', enabled);
+        store.set('field-selection-enabled', enabled)
         const eventBus = panel.getPanelContext().eventBus;
         eventBus.publish(new FieldSelectionEvent({
           panelId: getPanelIdForVizPanel(panel),
-          enabled: enabled === 'true',
+          enabled: enabled === 'true'
         }));
       },
     });

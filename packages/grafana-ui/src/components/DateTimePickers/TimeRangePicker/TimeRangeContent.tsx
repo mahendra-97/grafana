@@ -24,7 +24,7 @@ import { Field } from '../../Forms/Field';
 import { Icon } from '../../Icon/Icon';
 import { Input } from '../../Input/Input';
 import { Tooltip } from '../../Tooltip/Tooltip';
-import { getElapsedPickerZeroMs } from '../TimeRangePicker';
+import { getElapsedTimePickerZeroMs } from '../TimeRangePicker';
 import { type WeekStart } from '../WeekStartPicker';
 import { commonFormat } from '../commonFormat';
 import { isValid } from '../utils';
@@ -102,7 +102,7 @@ export const TimeRangeContent = (props: Props) => {
     let rawTo = to.value;
 
     if (isElapsedTimeModeEnabled()) {
-      const zeroMs = getElapsedPickerZeroMs(value);
+      const zeroMs = getElapsedTimePickerZeroMs(value);
 
       rawFrom = parseElapsedTimeRangeValue(rawFrom, zeroMs);
       rawTo = parseElapsedTimeRangeValue(rawTo, zeroMs);
@@ -187,9 +187,9 @@ export const TimeRangeContent = (props: Props) => {
   );
 
   // const fromLabel = 'FROM TEST';
-  const fromLabel = isElapsedTimeModeEnabled() ? `${t('time-picker.range-content.from-input', 'From')} (HH:MM:SS.SSSS)` : t('time-picker.range-content.from-input', 'From');
-  // const toLabel = 'TO TEST';
-  const toLabel = isElapsedTimeModeEnabled() ? `${t('time-picker.range-content.from-input', 'From')} (HH:MM:SS.SSSS)` : t('time-picker.range-content.to-input', 'To');
+  const fromLabel = isElapsedTimeModeEnabled() ? `${t('time-picker.range-content.from-input','From')} (HH:MM:SS.SSSS)` : t('time-picker.range-content.from-input','From');
+  // const fromLabel = 'TO TEST';
+  const toLabel = isElapsedTimeModeEnabled() ? `${t('time-picker.range-content.from-input','To')} (HH:MM:SS.SSSS)` : t('time-picker.range-content.to-input','To');
 
   return (
     <div>
@@ -214,7 +214,7 @@ export const TimeRangeContent = (props: Props) => {
       </div>
       <div className={style.fieldContainer}>
         {/* <Field label={t('time-picker.range-content.to-input', 'To')} invalid={to.invalid} error={to.errorMessage}> */}
-        <Field label={toLabel} invalid={to.invalid} error={to.errorMessage}></Field>
+        <Field label={toLabel} invalid={to.invalid} error={to.errorMessage}>
           <Input
             id={toFieldId}
             onClick={(event) => event.stopPropagation()}
@@ -274,7 +274,7 @@ function isRangeInvalid(from: string, to: string, timezone?: string): boolean {
   }
   const raw: RawTimeRange = { from, to };
   const timeRange = rangeUtil.convertRawToRange(raw, timezone, undefined, commonFormat);
-  
+
   const valid = timeRange.from.isSame(timeRange.to) || timeRange.from.isBefore(timeRange.to);
 
   return !valid;
@@ -306,11 +306,11 @@ function valueToState(
 function valueAsString(value: DateTime | string, timeZone?: TimeZone, timeRange?: TimeRange): string {
 
   if (isElapsedTimeModeEnabled()) {
-    const zeroMs = getElapsedPickerZeroMs(timeRange);
+    const zeroMs = getElapsedTimePickerZeroMs(timeRange);
 
     if (isDateTime(value)) {
       return formatElapsedTimeRangeValue(value.valueOf(), zeroMs);
-    }
+    };
 
     if (value.endsWith('Z')) {
       const dt = dateTimeParse(value);

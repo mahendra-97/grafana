@@ -142,6 +142,7 @@ export const ComboboxList = <T extends string | number>({
                     e.preventDefault();
                   }
                 }}
+              >
                 {isMultiSelect && (
                   <div className={styles.optionAccessory}>
                     {!item.infoOption && (

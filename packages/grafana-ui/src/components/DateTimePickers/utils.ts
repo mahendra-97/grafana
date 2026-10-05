@@ -16,7 +16,7 @@ export function isValid(value: string, roundUp?: boolean, timeZone?: TimeZone): 
   if (isElapsedTimeModeEnabled()) {
     value = normalizeElapsedinput(value);
     const elapsedRegex = /^\d+:\d{2}:\d{2}\.\d{4}$/;
-    
+
     if (elapsedRegex.test(value)) {
       return true;
     }

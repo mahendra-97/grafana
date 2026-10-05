@@ -41,10 +41,10 @@ export const StateTimelineTooltip = ({
   const xField = series.fields[0];
 
   const dataIdx = seriesIdx != null ? dataIdxs[seriesIdx] : dataIdxs.find((idx) => idx != null);
-  const timerangeFromMs = timeRange.from.valueOf();
+  const timeRangeFromMs = timeRange.from.valueOf();
   const elapsedOriginMs = 30 * 60 * 1000;
 
-  const zeroMs = Math.floor(timerangeFromMs / elapsedOriginMs) * elapsedOriginMs;
+  const zeroMs = Math.floor(timeRangeFromMs / elapsedOriginMs) * elapsedOriginMs;
 
   if (dataIdx == null) {
     return null;
@@ -103,7 +103,7 @@ export const StateTimelineTooltip = ({
   const headerItem: VizTooltipItem = {
     label: xField.type === FieldType.time ? '' : (xField.state?.displayName ?? xField.name),
     // value: endTime ? xVal + ' - \n' + xField.display!(endTime).text : xVal,
-    value: endTime ? `${xVal} - \n${formatElapsedValue(Number(endTime) - zeroMs, foundIncr)}` : xVal,
+    value: endTime? `${xVal} - \n${formatElapsedValue(Number(endTime) - zeroMs, foundIncr)}` : xVal,
   };
 
   return (

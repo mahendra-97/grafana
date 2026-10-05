@@ -36,8 +36,8 @@ import { getQuickOptions } from './options';
 import { useTimeSync } from './utils/useTimeSync';
 import { formatElapsedTimeRangeValue } from '../../utils/elapsedTime';
 
-
-
+// import { timeRangeToRelative } from '../../../../grafana-data/src/datetime/rangeutil';
+// import { useForceUpdate } from '../../hooks/useForceUpdate';
 
 /** @public */
 export interface TimeRangePickerProps {
@@ -80,9 +80,9 @@ export interface TimeRangePickerProps {
 const ELAPSED_TIME_ZERO_MS = 0;
 const CALENDAR_DATE_THRESHOLD_MS = Date.UTC(2000, 0, 1);
 
-export function getElapsedPickerZeroMs(value?: TimeRange): number {
+export function getElapsedTimePickerZeroMs(value?: TimeRange): number {
   const fromMs = value?.from.valueOf();
-  // if (Number.isFinite(fromMs) && fromMs > CALENDAR_DATE_THRESHOLD_MS) {
+  // if (Number.isFinite(fromMs) && fromMs > CALENDAR_TIME_THRESHOLD_MS) {
   if (typeof fromMs === 'number' && Number.isFinite(fromMs) && fromMs > CALENDAR_DATE_THRESHOLD_MS) {
     return getLocalDayStartMs(fromMs);
   }
@@ -90,7 +90,7 @@ export function getElapsedPickerZeroMs(value?: TimeRange): number {
 }
 
 function formatElapsedTimeRange(value: TimeRange): string {
-  const zeroMs = getElapsedPickerZeroMs(value);
+  const zeroMs = getElapsedTimePickerZeroMs(value);
 
   return `${formatElapsedTimeRangeValue(value.from.valueOf(), zeroMs)} to ${formatElapsedTimeRangeValue(value.to.valueOf(), zeroMs)}`;
 }
@@ -100,7 +100,7 @@ function clampElapsedTimerangeToZero(value: TimeRange): TimeRange {
     return value;
   }
 
-  const zeroMs = getElapsedPickerZeroMs(value);
+  const zeroMs = getElapsedTimePickerZeroMs(value);
   // const zeroMs = ELAPSED_TIME_ZERO_MS;
 
   const fromMs = value.from.valueOf();
@@ -193,14 +193,14 @@ export function TimeRangePicker(props: TimeRangePickerProps) {
   }, [isOpen, onToolbarTimePickerClick]);
 
   // useEffect(() => {
-  //   const handler = () => useForceUpdate();
+  //     const handler = () => useForceUpdate();
 
-  //   window.addEventListener('elapsed-time-mode-change', handler);
+  //     window.addEventListener('elapsed-time-mode-change', handler);
 
-  //   return () => {
-  //     window.removeEventListener('elapsed-time-mode-change', handler);
-  //   };
-  //  }, []
+  //     return () => {
+  //       window.removeEventListener('elapsed-time-mode-change', handler);
+  //     };
+  //    }, []
   // );
 
   const onToolbarButtonSwitch = () => {
@@ -244,7 +244,7 @@ export function TimeRangePicker(props: TimeRangePickerProps) {
     }
 
     // const zeroMs = ELAPSED_TIME_ZERO_MS;
-    const zeroMs = getElapsedPickerZeroMs(value);
+    const zeroMs = getElapsedTimePickerZeroMs(value);
     const fromMs = value.from.valueOf();
     const toMs = value.to.valueOf();
 
@@ -292,7 +292,7 @@ export function TimeRangePicker(props: TimeRangePickerProps) {
     }
 
     // const zeroMs = ELAPSED_TIME_ZERO_MS;
-    const zeroMs = getElapsedPickerZeroMs(value);
+    const zeroMs = getElapsedTimePickerZeroMs(value);
 
     if (zeroMs == null) {
       onZoom();
@@ -450,11 +450,11 @@ export const TimePickerTooltip = ({ timeRange, timeZone }: { timeRange: TimeRang
 
   // Get timezone info only if timeZone is provided
   const timeZoneInfo = timeZone ? getTimeZoneInfo(timeZone, now) : undefined;
-  const zeroMs = getElapsedPickerZeroMs(timeRange);
+  const zeroMs = getElapsedTimePickerZeroMs(timeRange);
 
-  const displayFrom = isElapsedTimeModeEnabled() ? formatElapsedTimerangeValue(timeRange.from.valueOf(), zeroMs) : dateTimeFormat(timeRange.from, { timeZone });
+  const displayFrom = isElapsedTimeModeEnabled() ? formatElapsedTimeRangeValue( timeRange.from.valueOf(), zeroMs) :dateTimeFormat(timeRange.from, { timeZone });
 
-  const displayTo = isElapsedTimeModeEnabled() ? formatElapsedTimerangeValue(timeRange.to.valueOf(), zeroMs) : dateTimeFormat(timeRange.to, { timeZone });
+  const displayTo = isElapsedTimeModeEnabled() ? formatElapsedTimeRangeValue(timeRange.to.valueOf(), zeroMs) :dateTimeFormat(timeRange.to, { timeZone });
   
   return (
     <>
@@ -467,7 +467,7 @@ export const TimePickerTooltip = ({ timeRange, timeZone }: { timeRange: TimeRang
         {/* {dateTimeFormat(timeRange.to, { timeZone })} */}
         {displayTo}
       </div>
-      {!isElapsedTimeModeEnabled() && (
+      { !isElapsedTimeModeEnabled() && (
         <div className={styles.container}>
           <span className={styles.utc}>{timeZoneFormatUserFriendly(timeZone)}</span>
           <TimeZoneDescription info={timeZoneInfo} />

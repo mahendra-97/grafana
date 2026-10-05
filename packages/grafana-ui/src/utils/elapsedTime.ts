@@ -37,25 +37,25 @@ export function getElapsedZeroMs(value: number): number {
 //   if (typeof window === 'undefined') {
 //     return undefined;
 //   }
-//
+
 //   const params = new URLSearchParams(window.location.search);
 //   const rawZeroMs = params.get('elapsedZeroMs') ?? params.get('var-elapsedZeroMs');
-//
+
 //   if (!rawZeroMs) {
 //     return undefined;
 //   }
-//
+
 //   const zeroMs = Number(rawZeroMs);
 //   return Number.isFinite(zeroMs) ? zeroMs : undefined;
 // }
 
 // export function getElapsedZeroMs(value: number): number {
 //   const zeroMs = getElapsedZeroMsFromUrl();
-//
+
 //   if (zeroMs != null) {
 //     return zeroMs;
 //   }
-//
+
 //   return value > MILLISECONDS_IN_YEAR ? getLocalDayStartMs(value) : 0;
 // }
 
@@ -63,8 +63,8 @@ export function getElapsedZeroMs(value: number): number {
 //   if (typeof window === 'undefined') {
 //     return false;
 //   }
-//
+
 //   const params = new URLSearchParams(window.location.search);
-//
+
 //   return params.get('elapsedTimeMode') === 'true' || params.get('var-elapsedTimeMode') === 'true';
 // }
